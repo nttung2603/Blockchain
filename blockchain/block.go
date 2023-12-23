@@ -20,15 +20,27 @@ type Block struct {
 }
 
 // SetHash calculates and sets the hash of the block.
+// func (b *Block) SetHash() {
+// 	// Concatenate PrevBlockHash, Transactions, and Timestamp
+// 	data := append(append(b.PrevHash, b.HashTransactions()...), IntToHex(b.Timestamp)...)
+
+// 	// Calculate SHA-256 hash
+// 	hash := sha256.Sum256(data)
+
+// 	// Set the hash of the block
+// 	b.Hash = hash[:]
+// }
 func (b *Block) SetHash() {
 	// Concatenate PrevBlockHash, Transactions, and Timestamp
 	data := append(append(b.PrevHash, b.HashTransactions()...), IntToHex(b.Timestamp)...)
 
-	// Calculate SHA-256 hash
-	hash := sha256.Sum256(data)
+	// Calculate nonce and hash
+	pow := NewProofOfWork(block)
+	nonce, hash := pow.Run()
 
-	// Set the hash of the block
-	b.Hash = hash[:]
+	// Set the nonce and hash of the block
+	block.Hash = hash[:]
+	block.Nonce = nonce
 }
 
 func (b *Block) HashTransactions() []byte {
