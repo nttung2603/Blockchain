@@ -49,11 +49,10 @@ func (cli *CommandLine) Run() {
 		if err != nil {
 			log.Panic(err)
 		}
-	//case "listaddresses":
-	//	err := listAddressesCmd.Parse(os.Args[2:])
-	//	if err != nil {
-	//		log.Panic(err)
-	//	}
+
+	case "sendBlock":
+
+
 	default:
 		cli.printUsage()
 		runtime.Goexit()

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
+	"encoding/gob"
+	"fmt"
 	"log"
 	"time"
 )
@@ -14,8 +16,9 @@ type Block struct {
 	PrevHash   []byte      //present the hash of the previous block
 	Hash       []byte      //present the hash of the block
 	MerkleTree *MerkleTree //present the merkle tree of the block
+	Nonce      int         //present the nonce of the block
+	Height     int
 	// Body
-	Nonce        int            //present the nonce of the block
 	Transactions []*Transaction //present the list of transactions in the block
 }
 
@@ -78,4 +81,37 @@ func (bc *Blockchain) AddBlock(transactions []*Transaction) {
 
 func GenesisBlock(coinbase *Transaction) *Block {
 	return CreateBlock([]*Transaction{coinbase}, []byte{})
+}
+
+func (b *Block) Serialize() ([]byte, error) {
+	var res bytes.Buffer
+	encoder := gob.NewEncoder(&res)
+
+	err := encoder.Encode(b)
+
+	return res.Bytes(), err
+}
+
+func Deserialize(data []byte) (*Block, error) {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+
+	err := decoder.Decode(&block)
+
+	return &block, err
+}
+
+func (b *Block) PrintBlock() {
+	fmt.Println("Block Information:")
+	fmt.Println("Timestamp: ", time.Unix(b.Timestamp, 0).Format(time.RFC3339))
+	fmt.Println("PrevHash: ", b.PrevHash)
+	fmt.Println("Hash: ", b.Hash)
+	fmt.Println("Nonce: ", b.Nonce)
+	fmt.Println("Height: ", b.Height)
+	fmt.Println("Transactions: ")
+	for _, tx := range b.Transactions {
+		fmt.Println("- Transaction detail: ", string(tx.Data))
+		fmt.Println("Data Bytes: ", tx.Data)
+	}
 }

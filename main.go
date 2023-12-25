@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Blockchain/blockchain"
 	"Blockchain/network"
 	"bufio"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 func printCmd() {
 	fmt.Println("Command:")
 	fmt.Println("\topen <port> \t\t\t\tOpen port to accept incomming connection")
-	fmt.Println("\tconnect <port> \t\t\t\tConnect to a new peer")
+	fmt.Println("\tconnect <address> \t\t\t\tConnect to a new peer")
 	fmt.Println("\tpeers \t \t\t\t\tGet list of peers")
 	fmt.Println("\tblockchain \t\t\t\tSee the current state of the blockchain")
 	fmt.Println("\tblock <index> \t\t\t\tSee a specific block")
@@ -44,9 +45,18 @@ func main() {
 			addr := strings.TrimSpace(strings.TrimPrefix(cmd, "connect"))
 			//fmt.Printf("Connecting to port %s\n", port)
 			network.ConnectNode(addr)
+		case strings.HasPrefix(cmd, "broadcastBlock"):
+			// Create a new blockchain with the genesis block
+			transactions := []*blockchain.Transaction{
+				{Data: []byte("Transaction 3")},
+				{Data: []byte("Transaction 4")},
+			}
+			newBlock := blockchain.CreateBlock(transactions, []byte("123"))
+			data, _ := newBlock.Serialize()
+			network.BroadcastData(data)
 		case cmd == "exit":
-			//fmt.Println("Exiting...")
-			//return
+			fmt.Println("Exiting...")
+			return
 		default:
 			fmt.Println("Invalid cmd. Please enter a valid option.")
 		}
