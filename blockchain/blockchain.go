@@ -2,7 +2,6 @@ package blockchain
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -31,10 +30,12 @@ func InitBlockchain(address string) *Blockchain {
 // 	fmt.Print(encoder)
 // }
 
-func MineBlock(address string) {
+func MineBlock(address string, transData []*Transaction) {
 	dataPath := address + ".json"
 	content, _ := ioutil.ReadFile(dataPath)
 	chain := new(Blockchain)
 	json.Unmarshal(content, &chain.blocks)
-	fmt.Println(chain.blocks[0].Timestamp)
+	chain.AddBlock(transData)
+	blockToJson, _ := json.Marshal(chain.blocks)
+	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
 }

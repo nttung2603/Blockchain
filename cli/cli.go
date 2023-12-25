@@ -16,8 +16,8 @@ func (cli *CommandLine) printUsage() {
 	fmt.Println("\topen <port> \t\t\t\tOpen port to accept incomming connection")
 	fmt.Println("\tconnect <port> \t\t\t\tConnect to a new peer")
 	fmt.Println("\tpeers \t\t\t\t\tGet list of peers")
-	fmt.Println("\tcreateblockchain <address> \t\t\t\t\t Create a blockchain")
-	fmt.Println("\tmine <address>\t\t\t\t\t Mine a block")
+	fmt.Println("\tcreateblockchain <address> \t\t\t Create a blockchain")
+	fmt.Println("\tmine <address>\t\t\t\t Mine a block")
 }
 
 func (cli *CommandLine) validateArgs() {
@@ -39,10 +39,9 @@ func (cli *CommandLine) createBlockChain(address string) {
 }
 
 func (cli *CommandLine) addBlock(address string) {
-	// transData := blockchain.FakeTransactionData()
-	fmt.Println("Creating fake Transaction data!")
-	blockchain.MineBlock(address)
-	fmt.Println("Mining\n", address)
+	transData := blockchain.FakeTransactionData()
+	fmt.Println("Creating fake Transaction data! Mining...")
+	blockchain.MineBlock(address, transData)
 }
 
 func (cli *CommandLine) Run() {
