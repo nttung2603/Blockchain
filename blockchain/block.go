@@ -10,10 +10,10 @@ import (
 
 type Block struct {
 	//Header
-	Timestamp  int64       //present the time the block was generated.
-	PrevHash   []byte      //present the hash of the previous block
-	Hash       []byte      //present the hash of the block
-	MerkleTree *MerkleTree //present the merkle tree of the block
+	Timestamp  int64  //present the time the block was generated.
+	PrevHash   []byte //present the hash of the previous block
+	Hash       []byte //present the hash of the block
+	MerkleRoot []byte //present the merkle root tree hash of the block
 	// Body
 	Nonce        int            //present the nonce of the block
 	Transactions []*Transaction //present the list of transactions in the block
@@ -26,6 +26,8 @@ func (b *Block) SetHash() {
 
 	// Calculate SHA-256 hash
 	hash := sha256.Sum256(data)
+	// pow := NewProofOfWork(block)
+	// nonce, hash := pow.Run()
 
 	// Set the hash of the block
 	b.Hash = hash[:]
@@ -44,6 +46,7 @@ func (b *Block) HashTransactions() []byte {
 	//hash := sha256.Sum256(transactionsData)
 	hash := NewMerkleTree(transactionsData)
 
+	b.MerkleRoot = hash.RootNode.Hash
 	return hash.RootNode.Hash
 	//return hash[:]
 }
@@ -60,7 +63,12 @@ func IntToHex(num int64) []byte {
 
 func CreateBlock(txs []*Transaction, prevHash []byte) *Block {
 	block := &Block{Timestamp: time.Now().Unix(), Transactions: txs, PrevHash: prevHash}
-	block.SetHash()
+	// block.SetHash()
+	pow := NewProof(block)
+	nonce, hash := pow.Run()
+
+	block.Hash = hash[:]
+	block.Nonce = nonce
 	return block
 }
 
@@ -78,4 +86,12 @@ func (bc *Blockchain) AddBlock(transactions []*Transaction) {
 
 func GenesisBlock(coinbase *Transaction) *Block {
 	return CreateBlock([]*Transaction{coinbase}, []byte{})
+}
+
+func FakeTransactionData() []*Transaction {
+	transactions := []*Transaction{
+		{Data: []byte("Transaction 1")},
+		{Data: []byte("Transaction 2")},
+	}
+	return transactions
 }
