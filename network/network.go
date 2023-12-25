@@ -3,18 +3,23 @@ package network
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	_ "github.com/libp2p/go-libp2p/core/network"
 	peerstore "github.com/libp2p/go-libp2p/core/peer"
 	_ "github.com/libp2p/go-libp2p/p2p/protocol/ping"
 	"github.com/multiformats/go-multiaddr"
-	"log"
 )
 
 var (
 	node host.Host
 )
+
+func GetHost() host.Host {
+	return node
+}
 
 func OpenNode(host string, port int) {
 	//addr := fmt.Sprintf("/ip4/%s/tcp/%d", host, port)
