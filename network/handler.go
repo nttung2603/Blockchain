@@ -6,9 +6,10 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/libp2p/go-libp2p/core/network"
 	"io"
 	"log"
+
+	"github.com/libp2p/go-libp2p/core/network"
 )
 
 const (
@@ -64,7 +65,7 @@ func readBytes(rw *bufio.ReadWriter) ([]byte, error) {
 	return result, nil
 }
 
-func HandleGetBlock(request []byte) blockchain.Block {
+func HandleGetBlock(request []byte) *blockchain.Block {
 	var buff bytes.Buffer
 	var block blockchain.Block
 
@@ -75,7 +76,7 @@ func HandleGetBlock(request []byte) blockchain.Block {
 		log.Panic(err)
 	}
 
-	return block
+	return &block
 }
 
 //	func HandleSendBlock(block blockchain.Block) blockchain.Block {
@@ -92,8 +93,14 @@ func handleStream(s network.Stream) {
 	command := BytesToCmd(data[:commandLength])
 	switch command {
 	case "getBlock":
+		chain := blockchain.GetChain("base_chain")
+		fmt.Println("get chain", chain)
 		block := HandleGetBlock(data)
 		block.PrintBlock()
+		chain.AppendBlock(block)
+		fmt.Println("prepare to write", chain)
+		blockchain.SetChain(chain, "base_chain")
+		fmt.Println("done")
 	case "getdata":
 		//HandleGetData(req, chain)
 	case "tx":

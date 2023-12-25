@@ -15,7 +15,7 @@ type Block struct {
 	Timestamp  int64  //present the time the block was generated.
 	PrevHash   []byte //present the hash of the previous block
 	Hash       []byte //present the hash of the block
-	MerkleRoot []byte //present the merkle root tree hash of the block
+	MerkleRoot []byte //present the merkle root tree hash of the block transactions
 	Nonce      int    //present the nonce of the block
 	Height     int
 	// Body

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"Blockchain/blockchain"
+	nw "Blockchain/network"
 	"flag"
 	"fmt"
 	"log"
@@ -18,6 +19,7 @@ func (cli *CommandLine) printUsage() {
 	fmt.Println("\tpeers \t\t\t\t\tGet list of peers")
 	fmt.Println("\tcreateblockchain <address> \t\t\t Create a blockchain")
 	fmt.Println("\tmine <address>\t\t\t\t Mine a block")
+	nw.GetHost()
 }
 
 func (cli *CommandLine) validateArgs() {
@@ -59,8 +61,8 @@ func (cli *CommandLine) Run() {
 
 	openNode := openNodeCmd.String("port", "", "Open port to accept incomming connection. Eg: open 5000")
 	connectNode := connectNodeCmd.String("port", "", "Connect port to accept incomming connection. Eg: open 5000")
-	createBlockchainAddress := createBlockchainCmd.String("address", "", "hihi")
-	mineAddress := mineCmd.String("address", "", "hihi")
+	createBlockchainAddress := createBlockchainCmd.String("address", "", "address of miner")
+	mineAddress := mineCmd.String("address", "", "address of miner")
 
 	switch os.Args[1] {
 	case "open":

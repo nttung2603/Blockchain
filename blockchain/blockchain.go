@@ -11,6 +11,10 @@ type Blockchain struct {
 	dataPath string
 }
 
+func (chain *Blockchain) AppendBlock(b *Block) {
+	chain.blocks = append(chain.blocks, b)
+}
+
 func InitBlockchain(address string) *Blockchain {
 	coinbaseTx := &Transaction{Data: []byte("Coinbase Transaction")}
 	genesisBlock := GenesisBlock(coinbaseTx)
@@ -29,6 +33,27 @@ func InitBlockchain(address string) *Blockchain {
 // 	encoder := json.NewEncoder(file)
 // 	fmt.Print(encoder)
 // }
+
+func (chain *Blockchain) GetPrevHash() []byte {
+	return chain.blocks[len(chain.blocks)-1].Hash
+}
+
+func GetChain(address string) *Blockchain {
+	dataPath := address + ".json"
+	content, _ := ioutil.ReadFile(dataPath)
+	chain := new(Blockchain)
+	json.Unmarshal(content, &chain.blocks)
+	return chain
+	// chain.AddBlock(transData)
+	// blockToJson, _ := json.Marshal(chain.blocks)
+	// ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
+}
+
+func SetChain(chain *Blockchain, address string) {
+	dataPath := address + ".json"
+	blockToJson, _ := json.Marshal(chain.blocks)
+	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
+}
 
 func MineBlock(address string, transData []*Transaction) {
 	dataPath := address + ".json"
