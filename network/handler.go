@@ -39,7 +39,6 @@ func BytesToCmd(bytes []byte) string {
 }
 func writeBytes(stream network.Stream, data []byte) error {
 	_, err := stream.Write(data)
-	fmt.Println("Write data successfully")
 	return err
 }
 
@@ -84,9 +83,7 @@ func HandleGetBlock(request []byte) *blockchain.Block {
 //
 // }
 func handleStream(s network.Stream) {
-
-	fmt.Println("Got a new stream!")
-
+	fmt.Println("Got a new stream from pid", s.Conn().RemotePeer())
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(s), bufio.NewWriter(s))
 	data, _ := readBytes(rw)
@@ -94,13 +91,12 @@ func handleStream(s network.Stream) {
 	switch command {
 	case "getBlock":
 		chain := blockchain.GetChain("base_chain")
-		fmt.Println("get chain", chain)
+		//fmt.Println("get chain", chain)
 		block := HandleGetBlock(data)
 		block.PrintBlock()
 		chain.AppendBlock(block)
-		fmt.Println("prepare to write", chain)
+		//fmt.Println("prepare to write", chain)
 		blockchain.SetChain(chain, "base_chain")
-		fmt.Println("done")
 	case "getdata":
 		//HandleGetData(req, chain)
 	case "tx":
@@ -111,4 +107,5 @@ func handleStream(s network.Stream) {
 		fmt.Println("Unknown command")
 	}
 	// stream 's' will stay open until you close it (or the other side closes it).
+	fmt.Print("blockchain -> ")
 }

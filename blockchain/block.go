@@ -120,12 +120,12 @@ func Deserialize(data []byte) (*Block, error) {
 
 func (b *Block) PrintBlock() {
 	fmt.Println("Block Information:")
-	fmt.Println("Timestamp: ", time.Unix(b.Timestamp, 0).Format(time.RFC3339))
-	fmt.Println("PrevHash: ", b.PrevHash)
-	fmt.Println("Hash: ", b.Hash)
-	fmt.Println("Nonce: ", b.Nonce)
-	fmt.Println("Height: ", b.Height)
-	fmt.Println("Transactions: ")
+	fmt.Println("* Timestamp: ", time.Unix(b.Timestamp, 0).Format(time.RFC3339))
+	fmt.Println("* PrevHash: ", b.PrevHash)
+	fmt.Println("* Hash: ", b.Hash)
+	fmt.Println("* Nonce: ", b.Nonce)
+	fmt.Println("* Height: ", b.Height)
+	fmt.Println("* Transactions: ")
 	for _, tx := range b.Transactions {
 		fmt.Println("- Transaction detail: ", string(tx.Data))
 		fmt.Println("Data Bytes: ", tx.Data)

@@ -13,21 +13,17 @@ import (
 func printCmd() {
 	fmt.Println("Command:")
 	fmt.Println("\topen <port> \t\t\t\tOpen port to accept incomming connection")
-	fmt.Println("\tconnect <address> \t\t\t\tConnect to a new peer")
-	fmt.Println("\tpeers \t \t\t\t\tGet list of peers")
+	fmt.Println("\tconnect <address> \t\t\tConnect to a new peer")
+	fmt.Println("\tpeers \t\t\t\t\tGet list of peers")
+	fmt.Println("\tcreateblockchain \t\t\tCreate a blockchain")
 	fmt.Println("\tblockchain \t\t\t\tSee the current state of the blockchain")
-	fmt.Println("\tmine <transaction> \t\t\t\tMine a new block")
-	// fmt.Println("\tblock <index> \t\t\t\tSee a specific block")
-	// fmt.Println("\tverify_block <index> <hash> \t\tVerify a block")
-	// fmt.Println("\tcheck_exist_transcation <data> \t\tCheck if a transaction exist")
+	fmt.Println("\tblock <index> \t\t\t\tSee a block in blockchain at index")
+	fmt.Println("\tmine <transaction> \t\t\tMine a new block")
+	fmt.Println("\tclone <pid> \t\t\t\tClone blockchain from a peer")
 	fmt.Println("\texit \t \t\t\t\tExit program")
 }
 
 func main() {
-	//defer os.Exit(0)
-	//
-	//cmd := cli.CommandLine{}
-	//cmd.Run()
 	printCmd()
 	for {
 		fmt.Print("blockchain -> ")
@@ -45,17 +41,45 @@ func main() {
 			addr := strings.TrimSpace(strings.TrimPrefix(cmd, "connect"))
 			//fmt.Printf("Connecting to port %s\n", port)
 			network.ConnectNode(addr)
+		case strings.HasPrefix(cmd, "peers"):
+			node := network.GetHost()
+			connections := node.Network().Conns()
+			fmt.Println("Address: ", node.Addrs()[0])
+			fmt.Println("ID: ", node.ID().String())
+			fmt.Println("Number of nodes connected: ", len(connections))
+			for _, conn := range connections {
+				fmt.Println("- Node address: ", conn.RemoteMultiaddr())
+				fmt.Println("- Node ID: ", conn.RemotePeer())
+			}
+		case strings.HasPrefix(cmd, "createblockchain"):
+			//node := network.GetHost()
+			//pid := network.GetHost().ID().String()
+			blockchain.InitBlockchain("base_chain")
+		case strings.HasPrefix(cmd, "blockchain"):
+			//chain := blockchain.GetChain(network.GetHost().ID().String())
+			chain := blockchain.GetChain("base_chain")
+			chain.PrintChain()
+		case strings.HasPrefix(cmd, "block"):
+			chain := blockchain.GetChain("base_chain")
+			index, _ := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(cmd, "block")))
+			chain.PrintBlock(index)
+
 		case strings.HasPrefix(cmd, "mine"):
 			// Create a new blockchain with the genesis block
+			//chain := blockchain.GetChain(network.GetHost().ID().String())
 			chain := blockchain.GetChain("base_chain")
 			transactions := []*blockchain.Transaction{
-				{Data: []byte("Transaction 3")},
-				{Data: []byte("Transaction 4")},
+				{Data: []byte("Transaction 10")},
+				{Data: []byte("Transaction 11")},
 			}
 			newBlock := blockchain.CreateBlock(transactions, chain.GetPrevHash())
 			data, _ := newBlock.Serialize()
 			network.BroadcastData(data)
-
+		case strings.HasPrefix(cmd, "connect"):
+			//pidClone := strings.TrimSpace(strings.TrimPrefix(cmd, "clone"))
+			//pidLocalHost := network.GetHost().ID().String()
+			//TO DO
+			//...
 		case cmd == "exit":
 			fmt.Println("Exiting...")
 			return

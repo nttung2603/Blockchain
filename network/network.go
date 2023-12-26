@@ -22,12 +22,6 @@ func GetHost() host.Host {
 }
 
 func OpenNode(host string, port int) {
-	//addr := fmt.Sprintf("/ip4/%s/tcp/%d", host, port)
-	//multiaddr, err := multiaddr.NewMultiaddr(addr)
-	//fmt.Println(multiaddr)
-	//if err != nil {
-	//	log.Panic(err)
-	//}
 	opts := []libp2p.Option{
 		libp2p.ListenAddrStrings(fmt.Sprintf("/ip4/%s/tcp/%d", host, port)),
 		//libp2p.Identity(priv),
@@ -44,8 +38,6 @@ func OpenNode(host string, port int) {
 		panic(err)
 	}
 	fmt.Println("libp2p node address:", addrs[0])
-	//defer node.Close()
-	fmt.Println(peerInfo)
 	node.SetStreamHandler("/p2p/1.0.0", handleStream)
 }
 
@@ -74,5 +66,6 @@ func BroadcastData(data []byte) {
 		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
 		request := append(CmdToBytes("getBlock"), data...)
 		go writeBytes(stream, request)
+		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
 	}
 }

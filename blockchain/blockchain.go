@@ -2,6 +2,7 @@ package blockchain
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 )
@@ -63,4 +64,15 @@ func MineBlock(address string, transData []*Transaction) {
 	chain.AddBlock(transData)
 	blockToJson, _ := json.Marshal(chain.blocks)
 	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
+}
+
+func (chain *Blockchain) PrintBlock(index int) {
+	chain.blocks[index].PrintBlock()
+}
+
+func (chain *Blockchain) PrintChain() {
+	fmt.Println("Blockchain Information")
+	fmt.Println("* Num blocks: ", len(chain.blocks))
+	fmt.Println("* Last block")
+	chain.blocks[len(chain.blocks)-1].PrintBlock()
 }
