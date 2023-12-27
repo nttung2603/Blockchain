@@ -75,11 +75,14 @@ func main() {
 			newBlock := blockchain.CreateBlock(transactions, chain.GetPrevHash())
 			data, _ := newBlock.Serialize()
 			network.BroadcastData(data)
-		case strings.HasPrefix(cmd, "connect"):
-			//pidClone := strings.TrimSpace(strings.TrimPrefix(cmd, "clone"))
-			//pidLocalHost := network.GetHost().ID().String()
-			//TO DO
-			//...
+		case strings.HasPrefix(cmd, "clone"):
+			pidClone := strings.TrimSpace(strings.TrimPrefix(cmd, "clone"))
+			pidLocalHost := network.GetHost().ID().String()
+			dialSet := network.NewDial(pidClone, pidLocalHost)
+			data, _ := dialSet.Serialize()
+			// dialSet := network.DialConect{pidServer: pidClone, pidClient: pidLocalHost}
+			fmt.Println(dialSet)
+			network.SendGetChainRequest(pidClone, data)
 		case cmd == "exit":
 			fmt.Println("Exiting...")
 			return

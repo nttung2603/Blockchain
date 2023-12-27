@@ -1,6 +1,8 @@
 package blockchain
 
 import (
+	"bytes"
+	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,8 +10,8 @@ import (
 )
 
 type Blockchain struct {
-	blocks   []*Block
-	dataPath string
+	blocks []*Block
+	// dataPath string
 }
 
 func (chain *Blockchain) AppendBlock(b *Block) {
@@ -22,9 +24,9 @@ func InitBlockchain(address string) *Blockchain {
 	blockchain := &Blockchain{
 		blocks: []*Block{genesisBlock},
 	}
-	blockchain.dataPath = address + ".json"
+	dataPath := address + ".json"
 	blockToJson, _ := json.Marshal(blockchain.blocks)
-	ioutil.WriteFile(blockchain.dataPath, blockToJson, os.ModePerm)
+	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
 	return blockchain
 }
 
@@ -75,4 +77,32 @@ func (chain *Blockchain) PrintChain() {
 	fmt.Println("* Num blocks: ", len(chain.blocks))
 	fmt.Println("* Last block")
 	chain.blocks[len(chain.blocks)-1].PrintBlock()
+}
+
+func SerializeBase(address string) []byte {
+	dataPath := address + ".json"
+	content, _ := ioutil.ReadFile(dataPath)
+	// var by []byte
+	// err := json.Unmarshal(content, &by)
+	return content
+}
+
+func DeserializeBase(data []byte, address string) {
+	ioutil.WriteFile(address+".json", data, os.ModePerm)
+}
+
+func (chain *Blockchain) SerializeChain() ([]byte, error) {
+	chain.PrintChain()
+	var res bytes.Buffer
+	encoder := gob.NewEncoder(&res)
+	err := encoder.Encode(chain)
+	return res.Bytes(), err
+}
+
+func DeserializeChain(data []byte) (*Blockchain, error) {
+	var chain Blockchain
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&chain)
+	return &chain, err
 }

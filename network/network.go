@@ -1,7 +1,9 @@
 package network
 
 import (
+	"bytes"
 	"context"
+	"encoding/gob"
 	"fmt"
 	"log"
 
@@ -13,9 +15,38 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
+type DialConectStr struct {
+	pidServer string
+	pidClient string
+}
+
+func NewDial(pidServer string, pidClient string) *DialConectStr {
+	p := DialConectStr{pidServer: pidServer, pidClient: pidClient}
+	return &p
+}
+
 var (
 	node host.Host
 )
+
+func (b *DialConectStr) Serialize() ([]byte, error) {
+	var res bytes.Buffer
+	encoder := gob.NewEncoder(&res)
+
+	err := encoder.Encode(b)
+
+	return res.Bytes(), err
+}
+
+func Deserialize(data []byte) (*DialConectStr, error) {
+	var block DialConectStr
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+
+	err := decoder.Decode(&block)
+
+	return &block, err
+}
 
 func GetHost() host.Host {
 	return node
@@ -65,6 +96,28 @@ func BroadcastData(data []byte) {
 		connectedPeerID := conn.RemotePeer()
 		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
 		request := append(CmdToBytes("getBlock"), data...)
+		go writeBytes(stream, request)
+		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
+	}
+}
+
+func SendGetChainRequest(pidCLone string, data []byte) {
+	connections := node.Network().Conns()
+	for _, conn := range connections {
+		connectedPeerID := conn.RemotePeer()
+		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
+		request := append(CmdToBytes("getChain"), data...)
+		go writeBytes(stream, request)
+		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
+	}
+}
+
+func SendGetChainResponse(pidCLone string, data []byte) {
+	connections := node.Network().Conns()
+	for _, conn := range connections {
+		connectedPeerID := conn.RemotePeer()
+		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
+		request := append(CmdToBytes("download"), data...)
 		go writeBytes(stream, request)
 		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
 	}
