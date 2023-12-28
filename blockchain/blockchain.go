@@ -9,6 +9,10 @@ import (
 	"os"
 )
 
+var (
+	bc *Blockchain
+)
+
 type Blockchain struct {
 	blocks []*Block
 	// dataPath string
@@ -18,43 +22,36 @@ func (chain *Blockchain) AppendBlock(b *Block) {
 	chain.blocks = append(chain.blocks, b)
 }
 
-func InitBlockchain(address string) *Blockchain {
+func InitBlockchain() {
 	coinbaseTx := &Transaction{Data: []byte("Coinbase Transaction")}
 	genesisBlock := GenesisBlock(coinbaseTx)
-	blockchain := &Blockchain{
+	bc = &Blockchain{
 		blocks: []*Block{genesisBlock},
 	}
-	dataPath := address + ".json"
-	blockToJson, _ := json.Marshal(blockchain.blocks)
-	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
-	return blockchain
 }
-
-// func (chain *Blockchain) MineBlock(block *Block) {
-// 	file, _ := os.OpenFile(chain.dataPath, os.O_CREATE, os.ModePerm)
-// 	defer file.Close()
-// 	encoder := json.NewEncoder(file)
-// 	fmt.Print(encoder)
-// }
 
 func (chain *Blockchain) GetPrevHash() []byte {
 	return chain.blocks[len(chain.blocks)-1].Hash
 }
 
-func GetChain(address string) *Blockchain {
+func GetChain() *Blockchain {
+	return bc
+}
+func SetChain(chain *Blockchain) {
+	bc = chain
+}
+
+func ReadChain(address string) {
 	dataPath := address + ".json"
 	content, _ := ioutil.ReadFile(dataPath)
 	chain := new(Blockchain)
 	json.Unmarshal(content, &chain.blocks)
-	return chain
-	// chain.AddBlock(transData)
-	// blockToJson, _ := json.Marshal(chain.blocks)
-	// ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
+	bc = chain
 }
 
-func SetChain(chain *Blockchain, address string) {
+func WriteChain(address string) {
 	dataPath := address + ".json"
-	blockToJson, _ := json.Marshal(chain.blocks)
+	blockToJson, _ := json.Marshal(bc.blocks)
 	ioutil.WriteFile(dataPath, blockToJson, os.ModePerm)
 }
 
@@ -92,10 +89,11 @@ func DeserializeBase(data []byte, address string) {
 }
 
 func (chain *Blockchain) SerializeChain() ([]byte, error) {
-	chain.PrintChain()
+	//chain.PrintChain()
 	var res bytes.Buffer
 	encoder := gob.NewEncoder(&res)
 	err := encoder.Encode(chain)
+	fmt.Println(res.Bytes())
 	return res.Bytes(), err
 }
 

@@ -86,7 +86,7 @@ func ConnectNode(addr string) {
 	if err != nil {
 		log.Panic(err)
 	}
-	fmt.Println("Connected to", peerAddrInfo.String())
+	fmt.Println("Connected to", multiaddr)
 
 }
 
@@ -120,5 +120,5 @@ func SendGetChainResponse(pidCLone string, data []byte) {
 	stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
 	request := append(CmdToBytes("download"), data...)
 	go writeBytes(stream, request)
-	fmt.Println("Receive blockchain from pid", connectedPeerID, "successfully")
+	fmt.Println("Receive request get blockchain from pid", connectedPeerID, "successfully")
 }

@@ -17,7 +17,6 @@ type Block struct {
 	Hash       []byte //present the hash of the block
 	MerkleRoot []byte //present the merkle root tree hash of the block transactions
 	Nonce      int    //present the nonce of the block
-	Height     int
 	// Body
 	Transactions []*Transaction //present the list of transactions in the block
 }
@@ -124,7 +123,6 @@ func (b *Block) PrintBlock() {
 	fmt.Println("* PrevHash: ", b.PrevHash)
 	fmt.Println("* Hash: ", b.Hash)
 	fmt.Println("* Nonce: ", b.Nonce)
-	fmt.Println("* Height: ", b.Height)
 	fmt.Println("* Transactions: ")
 	for _, tx := range b.Transactions {
 		fmt.Println("- Transaction detail: ", string(tx.Data))

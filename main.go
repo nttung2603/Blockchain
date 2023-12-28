@@ -15,7 +15,9 @@ func printCmd() {
 	fmt.Println("\topen <port> \t\t\t\tOpen port to accept incomming connection")
 	fmt.Println("\tconnect <address> \t\t\tConnect to a new peer")
 	fmt.Println("\tpeers \t\t\t\t\tGet list of peers")
-	fmt.Println("\tcreateblockchain \t\t\tCreate a blockchain")
+	fmt.Println("\tcreate_blockchain \t\t\tCreate a blockchain")
+	fmt.Println("\tload_blockchain <file> \t\t\tLoad a blockchain from a file")
+	fmt.Println("\tsave_blockchain \t\t\tSave a blockchain to a file")
 	fmt.Println("\tblockchain \t\t\t\tSee the current state of the blockchain")
 	fmt.Println("\tblock <index> \t\t\t\tSee a block in blockchain at index")
 	fmt.Println("\tmine <tx_1>,<tx_2>,...,<tx_n>  \t\tMine a new block")
@@ -35,12 +37,12 @@ func main() {
 		switch {
 		case strings.HasPrefix(cmd, "open"):
 			port, _ := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(cmd, "open")))
-			//fmt.Printf("Opening port %s\n", port)
 			network.OpenNode("127.0.0.1", port)
+
 		case strings.HasPrefix(cmd, "connect"):
 			addr := strings.TrimSpace(strings.TrimPrefix(cmd, "connect"))
-			//fmt.Printf("Connecting to port %s\n", port)
 			network.ConnectNode(addr)
+
 		case strings.HasPrefix(cmd, "peers"):
 			node := network.GetHost()
 			connections := node.Network().Conns()
@@ -51,16 +53,26 @@ func main() {
 				fmt.Println("- Node address: ", conn.RemoteMultiaddr())
 				fmt.Println("- Node ID: ", conn.RemotePeer())
 			}
-		case strings.HasPrefix(cmd, "createblockchain"):
-			//node := network.GetHost()
-			//pid := network.GetHost().ID().String()
-			blockchain.InitBlockchain("base_chain")
+		case strings.HasPrefix(cmd, "create_blockchain"):
+			blockchain.InitBlockchain()
+
+		case strings.HasPrefix(cmd, "load_blockchain"):
+			fileName := strings.TrimSpace(strings.TrimPrefix(cmd, "load_blockchain"))
+			blockchain.ReadChain(fileName)
+
+		case strings.HasPrefix(cmd, "save_blockchain"):
+			pid := network.GetHost().ID().String()
+			blockchain.WriteChain(pid)
+
 		case strings.HasPrefix(cmd, "blockchain"):
 			//chain := blockchain.GetChain(network.GetHost().ID().String())
-			chain := blockchain.GetChain("base_chain")
+			//chain := blockchain.ReadChain("base_chain")
+			chain := blockchain.GetChain()
 			chain.PrintChain()
+
 		case strings.HasPrefix(cmd, "block"):
-			chain := blockchain.GetChain("base_chain")
+			//chain := blockchain.ReadChain("base_chain")
+			chain := blockchain.GetChain()
 			index, _ := strconv.Atoi(strings.TrimSpace(strings.TrimPrefix(cmd, "block")))
 			chain.PrintBlock(index)
 
@@ -73,20 +85,19 @@ func main() {
 				fmt.Println(tx)
 				transactions = append(transactions, &blockchain.Transaction{Data: []byte(tx)})
 			}
-			chain := blockchain.GetChain("base_chain")
+			chain := blockchain.GetChain()
 			newBlock := blockchain.CreateBlock(transactions, chain.GetPrevHash())
 			data, _ := newBlock.Serialize()
 			network.BroadcastData(data)
+
 		case strings.HasPrefix(cmd, "clone"):
 			pidClone := strings.TrimSpace(strings.TrimPrefix(cmd, "clone"))
-			//pidLocalHost := network.GetHost().ID().String()
-			//dialSet := network.NewDial(pidClone, pidLocalHost)
-			//data, _ := dialSet.Serialize()
-			//fmt.Println(dialSet)
 			network.SendGetChainRequest(pidClone)
+
 		case cmd == "exit":
 			fmt.Println("Exiting...")
 			return
+
 		default:
 			fmt.Println("Invalid cmd. Please enter a valid option.")
 		}

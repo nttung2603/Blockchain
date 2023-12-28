@@ -59,13 +59,13 @@ func BytesToPid(bytes []byte) string {
 }
 func writeBytes(stream network.Stream, data []byte) error {
 	_, err := stream.Write(data)
-	fmt.Println("Write data successfully")
+	//fmt.Println("Write data successfully")
 	return err
 }
 
 func readBytes(rw *bufio.ReadWriter) ([]byte, error) {
 	var result []byte
-	buffer := make([]byte, 1024) // Kích thước buffer có thể điều chỉnh
+	buffer := make([]byte, 2048) // Kích thước buffer có thể điều chỉnh
 
 	for {
 		n, err := rw.Read(buffer)
@@ -100,8 +100,8 @@ func HandleGetBlock(request []byte) *blockchain.Block {
 }
 
 // *blockchain.Blockchain
-func HandleGetChain() []byte {
-	return blockchain.SerializeBase("base_chain")
+func HandleGetChain(address string) []byte {
+	return blockchain.SerializeBase(address)
 	// blockchain.DeserializeBase(request[commandLength:], "cloning")
 }
 
@@ -118,25 +118,26 @@ func handleStream(s network.Stream) {
 	command := BytesToCmd(data[:commandLength])
 	switch command {
 	case "getBlock":
-		chain := blockchain.GetChain("base_chain")
-		fmt.Println("get chain", chain)
+		chain := blockchain.GetChain()
+		//fmt.Println("get chain", chain)
 		block := HandleGetBlock(data)
 		block.PrintBlock()
 		chain.AppendBlock(block)
-		blockchain.SetChain(chain, "base_chain")
-		fmt.Println("done")
+		blockchain.SetChain(chain)
+
 	case "getChain":
 		pid := BytesToPid(data[commandLength:])
-		chainbytes := HandleGetChain()
-		fmt.Println("Done get chain data")
-		fmt.Println(pid)
+		blockchain.WriteChain(GetHost().ID().String())
+		chainbytes := HandleGetChain(GetHost().ID().String())
 		SendGetChainResponse(pid, chainbytes)
-		fmt.Println("send data back")
+
 	case "download":
 		HandleDownload(GetHost().ID().String(), data)
-		fmt.Println("done cloning")
+		blockchain.ReadChain(GetHost().ID().String())
+
 	case "version":
 		//HandleVersion(req, chain)
+
 	default:
 		fmt.Println("Unknown command")
 	}
