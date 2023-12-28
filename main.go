@@ -18,7 +18,7 @@ func printCmd() {
 	fmt.Println("\tcreateblockchain \t\t\tCreate a blockchain")
 	fmt.Println("\tblockchain \t\t\t\tSee the current state of the blockchain")
 	fmt.Println("\tblock <index> \t\t\t\tSee a block in blockchain at index")
-	fmt.Println("\tmine <transaction> \t\t\tMine a new block")
+	fmt.Println("\tmine <tx_1>,<tx_2>,...,<tx_n>  \t\tMine a new block")
 	fmt.Println("\tclone <pid> \t\t\t\tClone blockchain from a peer")
 	fmt.Println("\texit \t \t\t\t\tExit program")
 }
@@ -66,12 +66,14 @@ func main() {
 
 		case strings.HasPrefix(cmd, "mine"):
 			// Create a new blockchain with the genesis block
-			//chain := blockchain.GetChain(network.GetHost().ID().String())
-			chain := blockchain.GetChain("base_chain")
-			transactions := []*blockchain.Transaction{
-				{Data: []byte("Transaction 10")},
-				{Data: []byte("Transaction 11")},
+			listTransactionStr := strings.TrimSpace(strings.TrimPrefix(cmd, "mine"))
+			txList := strings.Split(listTransactionStr, ",")
+			var transactions []*blockchain.Transaction
+			for _, tx := range txList {
+				fmt.Println(tx)
+				transactions = append(transactions, &blockchain.Transaction{Data: []byte(tx)})
 			}
+			chain := blockchain.GetChain("base_chain")
 			newBlock := blockchain.CreateBlock(transactions, chain.GetPrevHash())
 			data, _ := newBlock.Serialize()
 			network.BroadcastData(data)
