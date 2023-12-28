@@ -16,6 +16,7 @@ const (
 	protocol      = "tcp"
 	version       = 1
 	commandLength = 12
+	pidLength     = 100
 )
 
 func CmdToBytes(cmd string) []byte {
@@ -29,6 +30,25 @@ func CmdToBytes(cmd string) []byte {
 }
 
 func BytesToCmd(bytes []byte) string {
+	var cmd []byte
+	for _, b := range bytes {
+		if b != 0x0 {
+			cmd = append(cmd, b)
+		}
+	}
+	return fmt.Sprintf("%s", cmd)
+}
+
+func PidToBytes(cmd string) []byte {
+	var bytes [pidLength]byte
+
+	for i, c := range cmd {
+		bytes[i] = byte(c)
+	}
+
+	return bytes[:]
+}
+func BytesToPid(bytes []byte) string {
 	var cmd []byte
 	for _, b := range bytes {
 		if b != 0x0 {
@@ -80,7 +100,7 @@ func HandleGetBlock(request []byte) *blockchain.Block {
 }
 
 // *blockchain.Blockchain
-func HandleGetChain(request []byte) []byte {
+func HandleGetChain() []byte {
 	return blockchain.SerializeBase("base_chain")
 	// blockchain.DeserializeBase(request[commandLength:], "cloning")
 }
@@ -103,22 +123,22 @@ func handleStream(s network.Stream) {
 		block := HandleGetBlock(data)
 		block.PrintBlock()
 		chain.AppendBlock(block)
-		fmt.Println("prepare to write", chain)
 		blockchain.SetChain(chain, "base_chain")
 		fmt.Println("done")
 	case "getChain":
-		chainbytes := HandleGetChain(data)
-		fmt.Println("done get chain data")
-		SendGetChainResponse("hihi", chainbytes)
+		pid := BytesToPid(data[commandLength:])
+		chainbytes := HandleGetChain()
+		fmt.Println("Done get chain data")
+		fmt.Println(pid)
+		SendGetChainResponse(pid, chainbytes)
 		fmt.Println("send data back")
 	case "download":
 		HandleDownload(GetHost().ID().String(), data)
 		fmt.Println("done cloning")
-		//HandleTx(req, chain)
 	case "version":
 		//HandleVersion(req, chain)
 	default:
 		fmt.Println("Unknown command")
 	}
-	// stream 's' will stay open until you close it (or the other side closes it).
+	fmt.Print("blockchain -> ")
 }

@@ -77,12 +77,11 @@ func main() {
 			network.BroadcastData(data)
 		case strings.HasPrefix(cmd, "clone"):
 			pidClone := strings.TrimSpace(strings.TrimPrefix(cmd, "clone"))
-			pidLocalHost := network.GetHost().ID().String()
-			dialSet := network.NewDial(pidClone, pidLocalHost)
-			data, _ := dialSet.Serialize()
-			// dialSet := network.DialConect{pidServer: pidClone, pidClient: pidLocalHost}
-			fmt.Println(dialSet)
-			network.SendGetChainRequest(pidClone, data)
+			//pidLocalHost := network.GetHost().ID().String()
+			//dialSet := network.NewDial(pidClone, pidLocalHost)
+			//data, _ := dialSet.Serialize()
+			//fmt.Println(dialSet)
+			network.SendGetChainRequest(pidClone)
 		case cmd == "exit":
 			fmt.Println("Exiting...")
 			return

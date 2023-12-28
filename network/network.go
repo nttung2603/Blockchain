@@ -101,24 +101,24 @@ func BroadcastData(data []byte) {
 	}
 }
 
-func SendGetChainRequest(pidCLone string, data []byte) {
-	connections := node.Network().Conns()
-	for _, conn := range connections {
-		connectedPeerID := conn.RemotePeer()
-		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
-		request := append(CmdToBytes("getChain"), data...)
-		go writeBytes(stream, request)
-		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
+func SendGetChainRequest(pidCLone string) {
+	connectedPeerID, err := peerstore.Decode(pidCLone)
+	if err != nil {
+		log.Fatal(err)
 	}
+	stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
+	request := append(CmdToBytes("getChain"), PidToBytes(GetHost().ID().String())...)
+	go writeBytes(stream, request)
+	fmt.Println("Send request get blockchain to pid", connectedPeerID, "successfully")
 }
 
 func SendGetChainResponse(pidCLone string, data []byte) {
-	connections := node.Network().Conns()
-	for _, conn := range connections {
-		connectedPeerID := conn.RemotePeer()
-		stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
-		request := append(CmdToBytes("download"), data...)
-		go writeBytes(stream, request)
-		fmt.Println("Broadcast data to pid", connectedPeerID, "successfully")
+	connectedPeerID, err := peerstore.Decode(pidCLone)
+	if err != nil {
+		log.Fatal(err)
 	}
+	stream, _ := node.NewStream(context.Background(), connectedPeerID, "/p2p/1.0.0")
+	request := append(CmdToBytes("download"), data...)
+	go writeBytes(stream, request)
+	fmt.Println("Receive blockchain from pid", connectedPeerID, "successfully")
 }
