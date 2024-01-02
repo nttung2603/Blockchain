@@ -1,6 +1,7 @@
 package blockchain
 
 import (
+	"Blockchain/wallet"
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -65,32 +66,27 @@ func (tx *Transaction) Sign(privKey ecdsa.PrivateKey) {
 		log.Panic(err)
 	}
 	signature := append(r.Bytes(), s.Bytes()...)
-	if tx.Inputs.Signature1 == nil {
-		tx.Inputs.Signature1 = signature
-	} else {
-		tx.Inputs.Signature2 = signature
-	}
+
+	tx.Inputs.Signature = signature
 }
 
-func (tx *Transaction) Verify() bool {
+func (tx *Transaction) Verify(PubKeyHash []byte) bool {
+	if !bytes.Equal(wallet.PublicKeyHash(tx.Inputs.PubKey), PubKeyHash) {
+		return false
+	}
 
 	txCopy := tx.TrimmedCopy()
 	curve := elliptic.P256()
 
-	txCopy.Inputs.Signature1 = nil
-	txCopy.Inputs.Signature2 = nil
+	txCopy.Inputs.Signature = nil
 
-	r1, s1 := GenerateXY(tx.Inputs.Signature1)
-	x1, y1 := GenerateXY(tx.Inputs.PubKey1)
-
-	r2, s2 := GenerateXY(tx.Inputs.Signature2)
-	x2, y2 := GenerateXY(tx.Inputs.PubKey2)
+	r1, s1 := GenerateXY(tx.Inputs.Signature)
+	x1, y1 := GenerateXY(tx.Inputs.PubKey)
 
 	dataToVerify := fmt.Sprintf("%x\n", txCopy)
 
 	rawPubKey1 := ecdsa.PublicKey{Curve: curve, X: &x1, Y: &y1}
-	rawPubKey2 := ecdsa.PublicKey{Curve: curve, X: &x2, Y: &y2}
-	if ecdsa.Verify(&rawPubKey1, []byte(dataToVerify), &r1, &s1) == false || ecdsa.Verify(&rawPubKey2, []byte(dataToVerify), &r2, &s2) == false {
+	if ecdsa.Verify(&rawPubKey1, []byte(dataToVerify), &r1, &s1) == false {
 		return false
 	}
 
