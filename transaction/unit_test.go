@@ -1,4 +1,4 @@
-package common
+package transaction
 
 import (
 	"fmt"
@@ -72,6 +72,25 @@ func Test_NewP2SHScriptPubKey(t *testing.T) {
 	fmt.Println("ScriptPubKey: ", scriptPubKey)
 }
 
-func Test_NewP2PKHAddress(t *testing.T) {
+func Test_NewAddressP2PKH(t *testing.T) {
 	_, PublicKey1 := NewKeyPair()
+	address, _ := NewAddressP2PKH(PublicKey1)
+	fmt.Println("Address: ", address)
+}
+
+func Test_NewAddressP2SH(t *testing.T) {
+	_, PublicKey1 := NewKeyPair()
+	_, PublicKey2 := NewKeyPair()
+
+	PubKeys := [][]byte{PublicKey1, PublicKey2}
+
+	redeemScript, err := NewMOfNRedeemScript(2, 2, PubKeys)
+	if err != nil {
+		fmt.Println("Error creating redeem script:", err)
+		return
+	}
+	redeemScriptHash := Hash160(redeemScript)
+
+	address, _ := NewAddressP2SH(redeemScriptHash)
+	fmt.Println("Address: ", address)
 }

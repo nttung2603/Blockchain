@@ -1,7 +1,6 @@
-package common
+package transaction
 
 import (
-	"Blockchain/transaction"
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/rand"
@@ -62,7 +61,7 @@ func NewP2PKHScriptPubKey(publicKeyHash []byte) ([]byte, error) {
 	return scriptPubKey.Bytes(), nil
 }
 
-func NewAddressP2PKH(publicKey []byte) ([]byte, error) {
+func NewAddressP2PKH(publicKey []byte) (string, error) {
 	pubHash := PublicKeyHash(publicKey)
 
 	versionedHash := append([]byte{version}, pubHash...)
@@ -74,7 +73,7 @@ func NewAddressP2PKH(publicKey []byte) ([]byte, error) {
 	return address, nil
 }
 
-func NewAddressP2SH(redeemScript []byte) ([]byte, string) {
+func NewAddressP2SH(redeemScript []byte) (string, string) {
 	redeemScriptHash := Hash160(redeemScript)
 
 	versionedHash := append([]byte{version}, redeemScriptHash...)
@@ -89,7 +88,7 @@ func NewAddressP2SH(redeemScript []byte) ([]byte, string) {
 	return address, redeemScriptHex
 }
 
-func NewSignature(tx transaction.Transaction, privKey ecdsa.PrivateKey) ([]byte, error) {
+func NewSignature(tx Transaction, privKey ecdsa.PrivateKey) ([]byte, error) {
 	txCopy := tx.TrimmedCopy()
 	dataToSign := fmt.Sprintf("%x\n", txCopy)
 	r, s, err := ecdsa.Sign(rand.Reader, &privKey, []byte(dataToSign))
@@ -101,10 +100,57 @@ func NewSignature(tx transaction.Transaction, privKey ecdsa.PrivateKey) ([]byte,
 	return signature, nil
 }
 
-func signP2PKHTransaction(tx transaction.Transaction, privKey ecdsa.PrivateKey) {
+func NewScripSignatureP2PKH(signature []byte, pubKey []byte) ([]byte, error) {
+	var buffer bytes.Buffer
 
+	buffer.WriteByte(byte(len(signature)))
+	buffer.Write(signature)
+	buffer.WriteByte(byte(len(pubKey)))
+	buffer.Write(pubKey)
+	scriptSig := buffer.Bytes()
+
+	return scriptSig, nil
 }
 
-func signP2SHTransaction(tx transaction.Transaction, privKey ecdsa.PrivateKey) {
+func NewScripSignatureP2SH(signatures [][]byte) ([]byte, error) {
+	var buffer bytes.Buffer
+	buffer.WriteByte(byte(OP_0)) //m
+	for _, signature := range signatures {
+		buffer.WriteByte(byte(len(signature))) //PUSH
+		buffer.Write(signature)                //<pubkey>
+	}
+	scriptSig := buffer.Bytes()
 
+	return scriptSig, nil
+}
+
+func SignP2PKHTransaction(tx Transaction, privKey ecdsa.PrivateKey, pubKey []byte) (Transaction, error) {
+	signature, _ := NewSignature(tx, privKey)
+	//Unlock
+	tx.Inputs.ScriptSig, _ = NewScripSignatureP2PKH(signature, pubKey)
+
+	return tx, nil
+}
+
+func SignP2SHTransaction(tx Transaction, privKeys []ecdsa.PrivateKey) (Transaction, error) {
+	var signatures [][]byte
+
+	for _, privKey := range privKeys {
+		signature, _ := NewSignature(tx, privKey)
+		signatures = append(signatures, signature)
+	}
+	//Unlock
+	tx.Inputs.ScriptSig, _ = NewScripSignatureP2SH(signatures)
+
+	return tx, nil
+}
+
+func ValidateAddress(address string) bool {
+	pubKeyHash := Base58Decode(address)
+	actualChecksum := pubKeyHash[len(pubKeyHash)-checksumLength:]
+	version := pubKeyHash[0]
+	pubKeyHash = pubKeyHash[1 : len(pubKeyHash)-checksumLength]
+	targetChecksum := Checksum(append([]byte{version}, pubKeyHash...))
+
+	return bytes.Compare(actualChecksum, targetChecksum) == 0
 }

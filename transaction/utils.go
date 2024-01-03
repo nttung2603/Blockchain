@@ -1,4 +1,4 @@
-package common
+package transaction
 
 import (
 	"crypto/ecdsa"
@@ -12,14 +12,14 @@ import (
 	"github.com/mr-tron/base58"
 )
 
-func Base58Encode(input []byte) []byte {
+func Base58Encode(input []byte) string {
 	encode := base58.Encode(input)
 
-	return []byte(encode)
+	return encode
 }
 
-func Base58Decode(input []byte) []byte {
-	decode, err := base58.Decode(string(input[:]))
+func Base58Decode(input string) []byte {
+	decode, err := base58.Decode(input)
 	if err != nil {
 		log.Panic(err)
 	}

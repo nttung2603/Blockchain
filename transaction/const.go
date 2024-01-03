@@ -1,4 +1,4 @@
-package common
+package transaction
 
 const (
 	checksumLength = 4
