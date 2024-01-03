@@ -6,12 +6,14 @@ import (
 	"crypto/rand"
 	"fmt"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/txscript"
+	"github.com/btcsuite/btcd/wire"
 	"github.com/btcsuite/btcutil"
 	"testing"
 )
 
-func Test_Function(t *testing.T) {
+func Test(t *testing.T) {
 	// Generate two random private keys
 	privateKey1, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
@@ -62,7 +64,7 @@ func Test_Function(t *testing.T) {
 	if err != nil {
 		return
 	}
-	fmt.Println(redeemScript)
+
 	// Create a P2SH address from the redeem script
 	scriptHash := btcutil.Hash160(redeemScript)
 	address, err := btcutil.NewAddressScriptHash(scriptHash, &chaincfg.MainNetParams)
@@ -88,16 +90,16 @@ func Test_Function(t *testing.T) {
 	//btcutil.New
 }
 
-//func createTransaction() *wire.MsgTx {
-//	// Create a new transaction with one input
-//	tx := wire.NewMsgTx(wire.TxVersion)
-//	outpoint := wire.NewOutPoint(&chainhash.Hash{}, 0)
-//	txin := wire.NewTxIn(outpoint, nil, nil)
-//	tx.AddTxIn(txin)
-//
-//	// Add one output
-//	scriptPubKey := []byte{txscript.OP_TRUE}
-//	txout := wire.NewTxOut(1000000, scriptPubKey)
-//	tx.AddTxOut(txout)
-//	return tx
-//}
+func createTransaction() *wire.MsgTx {
+	// Create a new transaction with one input
+	tx := wire.NewMsgTx(wire.TxVersion)
+	outpoint := wire.NewOutPoint(&chainhash.Hash{}, 0)
+	txin := wire.NewTxIn(outpoint, nil, nil)
+	tx.AddTxIn(txin)
+
+	// Add one output
+	scriptPubKey := []byte{txscript.OP_TRUE}
+	txout := wire.NewTxOut(1000000, scriptPubKey)
+	tx.AddTxOut(txout)
+	return tx
+}
